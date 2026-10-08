@@ -136,3 +136,5 @@ jobs:
           BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION = ' ios/App/App.xcodeproj/project.pbxproj | sed 's/[^0-9]//g')
           echo "TARGET_BUILD=$BUILD"
           TARGET_BUILD="$BUILD" node scripts/assign_beta_group.mjs
+
+# trigger build 5 (2026-10-08)
