@@ -16,7 +16,7 @@
   body{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
   .wrap{position:relative;width:100vw;height:calc(100dvh - 24px);display:flex;flex-direction:column}
   .page-foot{position:fixed;left:0;right:0;bottom:0;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.8px;color:#8b93b8;pointer-events:none;z-index:6}
-  .homebtn{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:8;background:rgba(247,181,0,.10);border:1px solid rgba(247,181,0,.5);color:#e6cf9a;border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:inherit}
+  .homebtn{position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:8;background:rgba(247,181,0,.10);border:1px solid rgba(247,181,0,.5);color:#e6cf9a;border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:inherit}
   canvas{display:block;width:100%;height:100%;touch-action:none}
   .hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:12px 16px;font-size:13px;pointer-events:none;color:#f7b500}
   .hud b{font-size:17px;color:#f7b500}
@@ -30,6 +30,8 @@
   .btn:hover{box-shadow:0 0 16px rgba(247,181,0,.55)}
   .btn:active{transform:translateY(3px) scale(.97);filter:brightness(.88);box-shadow:0 1px 4px rgba(0,0,0,.45)}
   .legend{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.8}
+  .go-btns{display:flex;gap:10px;justify-content:center;align-items:stretch;width:min(360px,88vw);margin:2px auto}
+  .go-btns .btn{flex:1 1 0;min-width:0;padding:15px 12px;white-space:nowrap}
   .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(320px,86vw);margin:4px auto 2px}
   .cell{height:52px;border-radius:12px;font-size:16px;font-weight:800;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .25s,box-shadow .2s,filter .2s;font-family:inherit}
   .cell.sp{background:transparent;border:1px solid rgba(247,181,0,.35);color:#d9c79a}
@@ -50,7 +52,7 @@
   <div class="overlay" id="ov"></div>
 </div>
 <div class="page-foot">© XOIO 2026</div>
-<button class="homebtn" id="btnLobby">回大廳</button>
+<button class="homebtn" id="btnLobby">退出</button>
 <script>
 /* ============================================================
    XOIO 打磚 36 rounds — 經典配色/計分 + juice
@@ -79,26 +81,26 @@ let LEVELS=[
  ['階梯',['#############','#############','.###########.','..#########..','...#######...','....#####....']],
  ['雙柱',['####...####','####...####','####...####','####...####','####...####']],
  ['機器頭',['.XXXXX.XXXXX.','.X#########X.','.X#.#####.#X.','.X#########X.','.X#.#####.#X.','.XXXXX.XXXXX.']],
- ['H 字',['###.....###','###.....###','#############','###.....###','###.....###']],
+ ['巨臉',['.XXX.XXX.XXX.','.X#########X.','.X#########X.','..#########..','.X#########X.','.X#########X.','.X#########X.','.XXX.XXX.XXX.']],
  ['彩虹環',['....#####....','..###...###..','.##.......##.','##.........##','##.........##','.##.......##.','..###...###..','....#####....']],
  ['蛇行',['#############','#...........#','#.#########.#','#.#.......#.#','#.#.#####.#.#','#...#...#...#']],
  ['MW 形',['##.........##','###.......###','#####...#####','##.###.###.##','##...###...##']],
  ['大菱形',['......#......','.....###.....','....#####....','...#######...','..#########..','.###########.','..#########..','...#######...','....#####....','.....###.....']],
  ['回字框',['#############','#...........#','#...........#','#...........#','#...........#','#############']],
- ['中央柱',['...#######...','..#########..','.###########.','#############','.###########.','..#########..']],
+ ['巨臉',['.XXX.XXX.XXX.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.XXX.XXX.XXX.']],
  ['三直條',['.###.###.###.','.###.###.###.','.###.###.###.','.###.###.###.']],
  ['交錯帶',['#############','..#########..','#############','..#########..']],
  ['雙塔',['.###....###.','.###....###.','.###....###.','.###....###.']],
  ['波浪',['.##.###.###..'.slice(0,13),'##.###.###.##','..###.###.##.','##.###.###.##']],
  ['雨傘',['...#######...','..#########..','.###########.','#############','.....#.......','.....#.......','.....##......']],
  ['雙層階梯',['##...........','####.........','######.......','########.....','##########...','############.']],
- ['三支點',['.#....#....#.','.#....#....#.','.#....#....#.','.#....#....#.']],
+ ['巨臉',['.XXXXX.XXXXX.','.X#########X.','.X#########X.','..#########..','.X#########X.','.X#########X.','.X#########X.','.XXXXX.XXXXX.']],
  ['十字橋',['....#####....','....#####....','#############','....#####....','....#####....']],
  ['盒中磚',['#############','#...........#','#.#########.#','#.#########.#','#...........#','#############']],
  ['對稱帶',['#############','.###########.','..#########..','..#########..','.###########.','#############']],
  ['上下帶',['#############','#############','.............','#############','#############']],
  ['山形',['.....#.......','....###......','...#####.....','..#######....','.##########..','#############']],
- ['三空格',['#####.....###','#####.....###','#############','#####.....###']],
+ ['巨臉',['.XXXXX.XXXXX.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.XXXXX.XXXXX.']],
  ['靶心',['...#######...','.##.......##.','#...........#','#...........#','.##.......##.','...#######...']],
  ['上下對稱',['..#########..','.###########.','#############','.###########.','..#########..']],
  ['愛心',['..###...###..','.#####.#####.','#############','#############','.###########.','..#########..','...#######...','....#####....','.....###.....']],
@@ -109,7 +111,7 @@ let LEVELS=[
  ['角色',['..###...###..','.###########.','#############','##.##...##.##','#############','###.......###','..#########..']],
  ['箭頭',['#............','##...........','###..........','####.........#','###..........','##...........','#............']],
  ['花朵',['..#...#...#..','.#.#.#.#.#.#.','#...#...#...#','.#.#.#.#.#.#.','..#...#...#..']],
- ['巨臉',['.XXXXX.XXXXX.','.X#########X.','.X#.#####.#X.','.X#########X.','.X#.#####.#X.','.X#########X.','.X##.###.##X.','.XXXXX.XXXXX.']],
+ ['巨臉',['.XXXXX.XXXXX.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.X#########X.','.XXXXXXXXXXX.']],
 ];
 LEVELS=LEVELS.map(l=>({name:l[0], rows:l[1]}));
 LEVELS=LEVELS.filter(l=>!['散點','直條紋','角色','箭頭','花朵','交錯帶'].includes(l.name)); // 30 關、保留巨臉當最後一關 (2026-10-08 John)
@@ -145,8 +147,8 @@ try{ const _s=localStorage.getItem('brick_speed'); if(_s==='slow'||_s==='advance
 const SPEED_BASE={normal:250, advanced:350, hell:500};
 /* i18n 中/英 (2026-10-08 John) */
 const I18N={
- zh:{round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'回大廳',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${LEVELS[n-1].name}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球'},
- en:{round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'LOBBY',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${LEVELS[n-1].name})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch'}
+ zh:{round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${LEVELS[n-1].name}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球'},
+ en:{round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${LEVELS[n-1].name})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch'}
 };
 let LANG='zh'; try{ if(localStorage.getItem('brick_lang')==='en') LANG='en'; }catch(e){}
 function T(){ return I18N[LANG]; }
@@ -322,7 +324,7 @@ function showOverlay(kind){
   if(kind==='menu'){ const t=T(); ov.innerHTML=`<button class="langbtn" id="langBtn">${LANG==='en'?'中':'EN'}</button><h1>XOIO 打磚</h1><div class="menu-grid"><button class="cell sp ${SPEED_MODE==='slow'?'on':''}" data-sp="slow">${t.slow}</button><button class="cell sp ${SPEED_MODE==='normal'?'on':''}" data-sp="normal">${t.normal}</button><button class="cell sp ${SPEED_MODE==='advanced'?'on':''}" data-sp="advanced">${t.advanced}</button><button class="cell sp ${SPEED_MODE==='hell'?'on':''}" data-sp="hell">${t.hell}</button><button class="cell solid" id="startBtn">${t.start}</button></div>
       `; }
   else if(kind==='levelclear'){ const t=T(); ov.innerHTML=`<h1>${t.clear(G.level+1)}</h1><p>${t.score} <b>${G.score}</b></p><button class="btn" id="startBtn">${t.next}</button>`; }
-  else if(kind==='gameover'){ const t=T(); ov.innerHTML=`<h1>${t.go}</h1><p>${t.init(G.level+1)} · ${t.score} <b>${G.score}</b></p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn" id="startBtn">${t.fromhead}</button><button class="btn" id="retryBtn">${t.fromlvl(G.level+1)}</button></div>`; }
+  else if(kind==='gameover'){ const t=T(); ov.innerHTML=`<h1>${t.go}</h1><p>${t.init(G.level+1)} · ${t.score} <b>${G.score}</b></p><div class="go-btns"><button class="btn" id="startBtn">${t.fromhead}</button><button class="btn" id="retryBtn">${t.fromlvl(G.level+1)}</button></div>`; }
   else if(kind==='win'){ const t=T(); ov.innerHTML=`<h1>${t.allclear}</h1><p>${t.done(LEVELS.length)} · ${t.score} <b>${G.score}</b></p><button class="btn" id="startBtn">${t.again}</button>`; }
   const b=document.getElementById('startBtn'); if(b) b.onclick=onStart;
   ov.querySelectorAll('.menu-grid .cell.sp').forEach(bt=>{ bt.onclick=()=>{ SPEED_MODE=bt.getAttribute('data-sp'); try{ localStorage.setItem('brick_speed',SPEED_MODE); }catch(e){} ov.querySelectorAll('.menu-grid .cell.sp').forEach(x=>x.classList.toggle('on',x===bt)); }; });
