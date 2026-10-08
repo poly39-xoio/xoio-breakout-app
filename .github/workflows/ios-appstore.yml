@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'www/**'
+      - 'scripts/**'
       - 'ios/App/App.xcodeproj/project.pbxproj'
       - '.github/workflows/ios-appstore.yml'
 

@@ -10,8 +10,8 @@ import crypto from 'node:crypto';
 const KEY_ID = process.env.ASC_KEY_ID || '7MMR5Z7G34';
 const ISSUER = process.env.ASC_ISSUER_ID || '19a86a9e-82a3-472f-a0b2-dc98b0e55819';
 const KEY_PATH = process.env.ASC_KEY_PATH || `${process.env.HOME}/private_keys/AuthKey_${KEY_ID}.p8`;
-const APP = process.env.ASC_APP_ID || '6811858851';
-const GROUP = process.env.ASC_BETA_GROUP || 'e3fe0f03-029a-4e2e-af76-b9f41310ede4'; // Internal Testing
+const APP = process.env.ASC_APP_ID || '6820494892';
+const GROUP = process.env.ASC_BETA_GROUP || 'ea5a3a39-0cd5-4af1-83f7-a5e2a03dc064'; // Internal Testing
 const TARGET = process.env.TARGET_BUILD || null;
 const API = 'https://api.appstoreconnect.apple.com';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
