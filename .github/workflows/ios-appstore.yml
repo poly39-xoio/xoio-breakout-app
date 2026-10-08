@@ -1,0 +1,134 @@
+name: iOS App Store build & upload
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'www/**'
+      - 'ios/App/App.xcodeproj/project.pbxproj'
+      - '.github/workflows/ios-appstore.yml'
+
+concurrency:
+  group: ios-appstore
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-26
+    env:
+      TEAM_ID: M4G48H48SK
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: |
+          ls /Applications | grep -i '^Xcode' || true
+          LATEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$LATEST/Contents/Developer"
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install deps
+        run: npm install
+
+      - name: Cap sync ios
+        run: npx cap sync ios
+
+      - name: Pod install
+        run: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Write App Store Connect API key
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          mkdir -p ~/private_keys ~/.appstoreconnect/private_keys
+          printf '%s' "$ASC_KEY_P8" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          cp ~/private_keys/AuthKey_${ASC_KEY_ID}.p8 ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          ls -la ~/private_keys/
+
+      - name: Prune stale signing certificates
+        continue-on-error: true
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: node scripts/prune_ios_certs.js
+
+      - name: Archive
+        env:
+          KEYID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/build/App.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${KEYID}.p8 \
+            -authenticationKeyID "$KEYID" \
+            -authenticationKeyIssuerID "$ISSUER" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            archive
+
+      - name: Export IPA
+        env:
+          KEYID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          cd ios/App
+          cat > ExportOptions.plist <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store</string>
+            <key>teamID</key><string>M4G48H48SK</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>destination</key><string>export</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/build/App.xcarchive" \
+            -exportPath "$PWD/build/ipa" \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${KEYID}.p8 \
+            -authenticationKeyID "$KEYID" \
+            -authenticationKeyIssuerID "$ISSUER"
+          ls -la "$PWD/build/ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mahjong-appstore-ipa
+          path: ios/App/build/ipa/*.ipa
+          if-no-files-found: warn
+
+      - name: Upload to App Store Connect
+        env:
+          KEYID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          cd ios/App
+          IPA=$(find build/ipa -maxdepth 1 -name '*.ipa' | head -1)
+          echo "Uploading $IPA"
+          xcrun altool --upload-app -f "$IPA" -t ios \
+            --apiKey "$KEYID" --apiIssuer "$ISSUER" --verbose
+
+      # 2026-10-08: 上傳後務必把新 build 加入 TestFlight 內測群組(command line 2026-10-08 build 38 漏做 → TestFlight 看不到)
+      - name: Assign build to internal TestFlight group
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: node scripts/assign_beta_group.mjs

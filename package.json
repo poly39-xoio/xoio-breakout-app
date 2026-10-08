@@ -1,0 +1,19 @@
+{
+  "name": "xoio-breakout-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "XOIO 打磚 (Breakout) — iOS/Android app (Capacitor)",
+  "scripts": {
+    "sync": "cap sync",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
