@@ -47,8 +47,9 @@
   .rotate p{margin:0;font-size:15px;line-height:1.9;color:rgba(238,242,255,.92);font-weight:700;letter-spacing:.5px}
   .rotate small{display:block;color:#8b93b8;font-weight:400;letter-spacing:0;margin-top:4px}
   /* 2026-10-09:底部常駐控制列(退出 + 語言) + 大廳速度網格(記錄) */
-  .ctrlbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;height:46px;width:min(100vw, calc((100dvh - 46px) * 0.56));display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:12}
-  .ctrlbar.center{justify-content:center}
+  .ctrlbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;height:46px;width:min(100vw, calc((100dvh - 46px) * 0.56));display:flex;align-items:center;justify-content:center;padding:0;box-sizing:border-box;z-index:12}
+  .ctrlbar-in{width:min(320px,86vw);display:flex;align-items:center;justify-content:space-between}
+  .ctrlbar-in.center{justify-content:center}
   .ctlbtn{pointer-events:auto;background:rgba(247,181,0,.10);border:1px solid rgba(247,181,0,.5);color:#e6cf9a;border-radius:6px;padding:7px 18px;font-size:12px;font-weight:800;letter-spacing:.5px;cursor:pointer;font-family:inherit}
   .ctlbtn:active{transform:translateY(1px);filter:brightness(.9)}
   .lobby-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;width:min(360px,92vw);margin:6px auto 2px}
@@ -68,7 +69,7 @@
   </div>
   <div class="overlay" id="ov"></div>
 </div>
-<div class="ctrlbar"><button class="ctlbtn" id="btnLobby">退出</button><button class="ctlbtn" id="btnLang2">中</button></div>
+<div class="ctrlbar"><div class="ctrlbar-in"><button class="ctlbtn" id="btnLobby">退出</button><button class="ctlbtn" id="btnLang2">中</button></div></div>
 <div class="rotate" id="rotate"><div class="ico">📱</div><p>請將手機轉為直立<br><small>Please rotate your phone to portrait</small></p></div>
 <script>
 /* ============================================================
@@ -160,8 +161,8 @@ try{ const _s=localStorage.getItem('brick_speed'); if(_s==='slow'||_s==='advance
 const SPEED_BASE={normal:250, advanced:350, hell:500};
 /* i18n 中/英 (2026-10-08 John) */
 const I18N={
- zh:{round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${lvName(n-1)}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球',menuTip:'點速度 → 點格子直接從該關開始（實心＝已過關）'},
- en:{round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${lvName(n-1)})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch',menuTip:'Pick a speed, then tap a round (solid = cleared)'}
+ zh:{title:'XOIO 打磚',round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${lvName(n-1)}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球',menuTip:'點速度 → 點格子直接從該關開始（實心＝已過關）'},
+ en:{title:'Hell Bricks',round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${lvName(n-1)})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch',menuTip:'Pick a speed, then tap a round (solid = cleared)'}
 };
 let LANG='zh'; try{ if(localStorage.getItem('brick_lang')==='en') LANG='en'; }catch(e){}
 function T(){ return I18N[LANG]; }
@@ -354,11 +355,11 @@ function renderLobbyGrid(){
   if(sb){ if(SEL_LEVEL>=0) sb.classList.remove('dim'); else sb.classList.add('dim');
     sb.onclick=function(){ if(SEL_LEVEL>=0){ START_LEVEL=SEL_LEVEL; onStart(); } }; }
 }
-function _setCtrlBar(showLang){ const bar=document.querySelector('.ctrlbar'), lb=document.getElementById('btnLang2'); if(lb) lb.style.display=showLang?'':'none'; if(bar) bar.classList.toggle('center', !showLang); }
+function _setCtrlBar(showLang){ const bar=document.querySelector('.ctrlbar-in'), lb=document.getElementById('btnLang2'); if(lb) lb.style.display=showLang?'':'none'; if(bar) bar.classList.toggle('center', !showLang); }
 function showOverlay(kind, keepPick){
   ov.classList.remove('hide');
   if(kind==='menu' && !keepPick){ SPEED_PICKED=false; SEL_LEVEL=-1; }
-  if(kind==='menu'){ const t=T(); ov.innerHTML=`<h1>XOIO 打磚</h1><div class="menu-grid"><button class="cell sp ${SPEED_MODE==='slow'?'on':''}" data-sp="slow">${t.slow}</button><button class="cell sp ${SPEED_MODE==='normal'?'on':''}" data-sp="normal">${t.normal}</button><button class="cell sp ${SPEED_MODE==='advanced'?'on':''}" data-sp="advanced">${t.advanced}</button><button class="cell sp ${SPEED_MODE==='hell'?'on':''}" data-sp="hell">${t.hell}</button></div><div class="lobby-grid" id="lobbyGrid"></div><button class="btn dim" id="lobbyStart">${t.start}</button>
+  if(kind==='menu'){ const t=T(); ov.innerHTML=`<h1>${t.title}</h1><div class="menu-grid"><button class="cell sp ${SPEED_MODE==='slow'?'on':''}" data-sp="slow">${t.slow}</button><button class="cell sp ${SPEED_MODE==='normal'?'on':''}" data-sp="normal">${t.normal}</button><button class="cell sp ${SPEED_MODE==='advanced'?'on':''}" data-sp="advanced">${t.advanced}</button><button class="cell sp ${SPEED_MODE==='hell'?'on':''}" data-sp="hell">${t.hell}</button></div><div class="lobby-grid" id="lobbyGrid"></div><button class="btn dim" id="lobbyStart">${t.start}</button>
       `; }
   else if(kind==='levelclear'){ const t=T(); ov.innerHTML=`<h1>${t.clear(G.level+1)}</h1><p>${t.score} <b>${G.score}</b></p><button class="btn" id="startBtn">${t.next}</button>`; }
   else if(kind==='gameover'){ const t=T(); ov.innerHTML=`<h1>${t.go}</h1><p>${t.init(G.level+1)} · ${t.score} <b>${G.score}</b></p><div class="go-btns"><button class="btn" id="startBtn">${t.fromhead}</button><button class="btn" id="retryBtn">${t.fromlvl(G.level+1)}</button></div>`; }
