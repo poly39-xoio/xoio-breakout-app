@@ -14,7 +14,8 @@
     'Campton','Avenir Next','Montserrat','Inter','Huninn',sans-serif;}
   html{position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;touch-action:none}
   body{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-  .wrap{position:relative;width:100vw;height:calc(100dvh - 24px);display:flex;flex-direction:column}
+  /* 2026-10-09 John:iPad/橫向改為「縮小成直欄、左右留白」→ 舞台寬度上限 = 高度 * 0.56;窄螢幕(手機直立)仍填滿 */
+  .wrap{position:relative;width:min(100vw, calc((100dvh - 46px) * 0.56));height:calc(100dvh - 46px);margin:0 auto;display:flex;flex-direction:column}
   .page-foot{position:fixed;left:0;right:0;bottom:0;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.8px;color:#8b93b8;pointer-events:none;z-index:6}
   .homebtn{position:fixed;left:50%;transform:translateX(-50%);top:10px;z-index:8;background:rgba(247,181,0,.10);border:1px solid rgba(247,181,0,.5);color:#e6cf9a;border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:inherit}
   canvas{display:block;width:100%;height:100%;touch-action:none}
@@ -22,7 +23,7 @@
   .hud b{font-size:17px;color:#f7b500}
   #hLives{color:#ff5a5a}
   .langbtn{position:absolute;top:10px;right:12px;z-index:9;background:rgba(247,181,0,.08);border:1px solid rgba(247,181,0,.35);color:#e6cf9a;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:800;cursor:pointer} .hud .r{text-align:right} .hud .lv{color:rgba(238,242,255,.92);font-size:11px}
-  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:22px;background:rgba(4,6,14,.82);backdrop-filter:blur(3px);transition:opacity .25s}
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:22px 22px 74px;overflow-y:auto;background:rgba(4,6,14,.82);backdrop-filter:blur(3px);transition:opacity .25s}
   .overlay.hide{opacity:0;pointer-events:none}
   .overlay h1{margin:0;font-size:26px;letter-spacing:4px;color:#f7b500;font-weight:900}
   .overlay p{margin:0;color:rgba(238,242,255,.92);font-size:13px;line-height:1.7}
@@ -40,6 +41,21 @@
   .cell.solid{grid-column:1/-1;border:none;background:linear-gradient(135deg,#f7b500 0%,#ff9e18 100%);color:#1a1204;box-shadow:0 8px 22px -12px rgba(247,181,0,.9)}
   .cell.solid:hover{box-shadow:0 0 16px rgba(247,181,0,.55)}
   .cell.solid:active{transform:translateY(3px) scale(.97);filter:brightness(.88)}
+  /* 2026-10-09:手機橫向提示(網頁版;App 端 iPhone 已在 Info.plist 鎖直立) */
+  .rotate{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#05070f;color:#e6cf9a;text-align:center;padding:24px}
+  .rotate .ico{font-size:54px;transform:rotate(90deg)}
+  .rotate p{margin:0;font-size:15px;line-height:1.9;color:rgba(238,242,255,.92);font-weight:700;letter-spacing:.5px}
+  .rotate small{display:block;color:#8b93b8;font-weight:400;letter-spacing:0;margin-top:4px}
+  /* 2026-10-09:底部常駐控制列(退出 + 語言) + 大廳速度網格(記錄) */
+  .ctrlbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;height:46px;width:min(100vw, calc((100dvh - 46px) * 0.56));display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:12}
+  .ctlbtn{pointer-events:auto;background:rgba(247,181,0,.10);border:1px solid rgba(247,181,0,.5);color:#e6cf9a;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:800;letter-spacing:.5px;cursor:pointer;font-family:inherit}
+  .ctlbtn:active{transform:translateY(1px);filter:brightness(.9)}
+  .lobby-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;width:min(360px,92vw);margin:6px auto 2px}
+  .lobby-grid button{aspect-ratio:1;border-radius:8px;border:1px solid rgba(247,181,0,.35);background:transparent;color:#d9c79a;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;transition:background .12s,color .12s}
+  .lobby-grid button:hover{background:rgba(247,181,0,.12)}
+  .lobby-grid button.done{background:linear-gradient(135deg,#f7b500 0%,#ff9e18 100%);border-color:#f7b500;color:#1a1204}
+  .lobby-grid button.sel{border-color:#fff;box-shadow:inset 0 0 0 2px #fff,0 0 10px rgba(247,181,0,.7)}
+  .btn.dim{opacity:.32;filter:grayscale(.6);box-shadow:none;pointer-events:none}
 </style>
 </head>
 <body>
@@ -51,8 +67,8 @@
   </div>
   <div class="overlay" id="ov"></div>
 </div>
-<div class="page-foot">© XOIO 2026</div>
-<button class="homebtn" id="btnLobby">退出</button>
+<div class="ctrlbar"><button class="ctlbtn" id="btnLobby">退出</button><button class="ctlbtn" id="btnLang2">中</button></div>
+<div class="rotate" id="rotate"><div class="ico">📱</div><p>請將手機轉為直立<br><small>Please rotate your phone to portrait</small></p></div>
 <script>
 /* ============================================================
    XOIO 打磚 36 rounds — 經典配色/計分 + juice
@@ -62,6 +78,9 @@ function fit(){ const dpr=Math.min(window.devicePixelRatio||1,3); const r=cv.get
   W=Math.max(300,Math.round(r.width)); H=Math.max(360,Math.round(r.height));
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
 window.addEventListener('resize',function(){ fit(); try{ if(G&&G.players&&G.players.length) buildLevel(G.level); }catch(e){} });
+/* 2026-10-09:小螢幕(手機)橫向 → 顯示「請轉直立」遮罩(iPad 尺寸不觸發,改走縮小留白) */
+function checkRotate(){ const el=document.getElementById('rotate'); if(!el)return; const small=Math.min(screen.width,screen.height)<600; const land=window.innerWidth>window.innerHeight; el.style.display=(small&&land)?'flex':'none'; }
+window.addEventListener('resize',checkRotate); window.addEventListener('orientationchange',checkRotate);
 
 /* 經典打磚塊配色 + 分數 */
 const PAL=[
@@ -133,20 +152,20 @@ const G={ mode:'menu', level:0, score:0, lives:MAXLIVES, stall:0, t:0,
 const keys={left:false,right:false};
 const AUTO=new URLSearchParams(location.search).has('auto');
 const _lvlQ=parseInt(new URLSearchParams(location.search).get('level')||'',10); // ?level=N 直接從第 N 關開始 (2026-10-08 John)
-const START_LEVEL=(_lvlQ>=1&&_lvlQ<=LEVELS.length)?_lvlQ-1:0;
+let START_LEVEL=(_lvlQ>=1&&_lvlQ<=LEVELS.length)?_lvlQ-1:0;
 let SPEED_MODE='normal'; // 球速: normal=普通 / advanced=進階 / hell=地獄 (2026-10-08 John)
 try{ const _s=localStorage.getItem('brick_speed'); if(_s==='slow'||_s==='advanced'||_s==='hell') SPEED_MODE=_s; }catch(e){}
 { const _sp=new URLSearchParams(location.search).get('speed'); if(_sp==='slow'||_sp==='normal'||_sp==='advanced'||_sp==='hell') SPEED_MODE=_sp; }
 const SPEED_BASE={normal:250, advanced:350, hell:500};
 /* i18n 中/英 (2026-10-08 John) */
 const I18N={
- zh:{round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${LEVELS[n-1].name}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球'},
- en:{round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${LEVELS[n-1].name})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch'}
+ zh:{round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${LEVELS[n-1].name}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球',menuTip:'點速度 → 點格子直接從該關開始（實心＝已過關）'},
+ en:{round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${LEVELS[n-1].name})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch',menuTip:'Pick a speed, then tap a round (solid = cleared)'}
 };
 let LANG='zh'; try{ if(localStorage.getItem('brick_lang')==='en') LANG='en'; }catch(e){}
 function T(){ return I18N[LANG]; }
-function applyLang(){ const t=T(); const a=document.getElementById('lblRound'); if(a)a.textContent=t.round; const b=document.getElementById('lblScore'); if(b)b.textContent=t.score; const hb=document.getElementById('btnLobby'); if(hb)hb.textContent=t.lobby; }
-function setLang(l){ LANG=(l==='en')?'en':'zh'; try{ localStorage.setItem('brick_lang',LANG); }catch(e){} applyLang(); if(G&&G.mode==='menu') showOverlay('menu'); }
+function applyLang(){ const t=T(); const a=document.getElementById('lblRound'); if(a)a.textContent=t.round; const b=document.getElementById('lblScore'); if(b)b.textContent=t.score; const hb=document.getElementById('btnLobby'); if(hb)hb.textContent=t.lobby; const lg=document.getElementById('btnLang2'); if(lg)lg.textContent=(LANG==='en')?'中文':'EN'; }
+function setLang(l){ LANG=(l==='en')?'en':'zh'; try{ localStorage.setItem('brick_lang',LANG); }catch(e){} applyLang(); if(G&&G.mode==='menu') showOverlay('menu', true); }
 const MAXBALLS=10;
 
 function roundSpeed(i){ const n=LEVELS.length, f=Math.sqrt((W/420)*(H/760)); let v; if(SPEED_MODE==='hell') v=800+(n>1?i*200/(n-1):0); else if(SPEED_MODE==='advanced') v=500+(n>1?i*200/(n-1):0); else if(SPEED_MODE==='slow') v=150+(n>1?i*50/(n-1):0); else v=250+(n>1?i*150/(n-1):0); return v*f; }
@@ -310,29 +329,53 @@ function updateHud(){ document.getElementById('hLevel').textContent=G.level+1;
   document.getElementById('hName').textContent=LEVELS[G.level].name;
   document.getElementById('hScore').textContent=G.score;
   document.getElementById('hLives').textContent='♥'.repeat(Math.max(0,G.lives))+'♡'.repeat(Math.max(0,MAXLIVES-G.lives)); }
+/* 2026-10-09:過關記錄(4 種速度各自記錄,localStorage;實心＝已過關) */
+const PROGKEY='brick_prog_v1';
+const PROG={
+  get:function(sp){ try{ var o=JSON.parse(localStorage.getItem(PROGKEY)||'{}'); return o[sp]||{}; }catch(e){ return {}; } },
+  mark:function(sp,i){ try{ var o=JSON.parse(localStorage.getItem(PROGKEY)||'{}'); o[sp]=o[sp]||{}; o[sp][i]=1; localStorage.setItem(PROGKEY,JSON.stringify(o)); }catch(e){} }
+};
 const ov=document.getElementById('ov');
-function showOverlay(kind){
+let SEL_LEVEL=-1, SPEED_PICKED=false;
+function renderLobbyGrid(){
+  const g=document.getElementById('lobbyGrid'); if(!g) return;
+  const sb=document.getElementById('lobbyStart');
+  if(!SPEED_PICKED){ g.style.display='none'; if(sb) sb.style.display='none'; return; }
+  g.style.display=''; if(sb) sb.style.display='';
+  const done=PROG.get(SPEED_MODE); g.innerHTML='';
+  for(let i=0;i<LEVELS.length;i++){
+    const b=document.createElement('button'); b.textContent=(i+1);
+    const cls=[]; if(done[i]) cls.push('done'); if(i===SEL_LEVEL) cls.push('sel'); b.className=cls.join(' ');
+    b.onclick=function(){ SEL_LEVEL=i; renderLobbyGrid(); };
+    g.appendChild(b);
+  }
+  if(sb){ if(SEL_LEVEL>=0) sb.classList.remove('dim'); else sb.classList.add('dim');
+    sb.onclick=function(){ if(SEL_LEVEL>=0){ START_LEVEL=SEL_LEVEL; onStart(); } }; }
+}
+function showOverlay(kind, keepPick){
   ov.classList.remove('hide');
-  const _hb=document.getElementById('btnLobby'); if(_hb)_hb.style.display='none';
-  if(kind==='menu'){ const t=T(); ov.innerHTML=`<button class="langbtn" id="langBtn">${LANG==='en'?'中':'EN'}</button><h1>XOIO 打磚</h1><div class="menu-grid"><button class="cell sp ${SPEED_MODE==='slow'?'on':''}" data-sp="slow">${t.slow}</button><button class="cell sp ${SPEED_MODE==='normal'?'on':''}" data-sp="normal">${t.normal}</button><button class="cell sp ${SPEED_MODE==='advanced'?'on':''}" data-sp="advanced">${t.advanced}</button><button class="cell sp ${SPEED_MODE==='hell'?'on':''}" data-sp="hell">${t.hell}</button><button class="cell solid" id="startBtn">${t.start}</button></div>
+  if(kind==='menu' && !keepPick){ SPEED_PICKED=false; SEL_LEVEL=-1; }
+  if(kind==='menu'){ const t=T(); ov.innerHTML=`<h1>XOIO 打磚</h1><div class="menu-grid"><button class="cell sp ${SPEED_MODE==='slow'?'on':''}" data-sp="slow">${t.slow}</button><button class="cell sp ${SPEED_MODE==='normal'?'on':''}" data-sp="normal">${t.normal}</button><button class="cell sp ${SPEED_MODE==='advanced'?'on':''}" data-sp="advanced">${t.advanced}</button><button class="cell sp ${SPEED_MODE==='hell'?'on':''}" data-sp="hell">${t.hell}</button></div><div class="lobby-grid" id="lobbyGrid"></div><button class="btn dim" id="lobbyStart">${t.start}</button>
       `; }
   else if(kind==='levelclear'){ const t=T(); ov.innerHTML=`<h1>${t.clear(G.level+1)}</h1><p>${t.score} <b>${G.score}</b></p><button class="btn" id="startBtn">${t.next}</button>`; }
   else if(kind==='gameover'){ const t=T(); ov.innerHTML=`<h1>${t.go}</h1><p>${t.init(G.level+1)} · ${t.score} <b>${G.score}</b></p><div class="go-btns"><button class="btn" id="startBtn">${t.fromhead}</button><button class="btn" id="retryBtn">${t.fromlvl(G.level+1)}</button></div>`; }
   else if(kind==='win'){ const t=T(); ov.innerHTML=`<h1>${t.allclear}</h1><p>${t.done(LEVELS.length)} · ${t.score} <b>${G.score}</b></p><button class="btn" id="startBtn">${t.again}</button>`; }
   const b=document.getElementById('startBtn'); if(b) b.onclick=onStart;
-  ov.querySelectorAll('.menu-grid .cell.sp').forEach(bt=>{ bt.onclick=()=>{ SPEED_MODE=bt.getAttribute('data-sp'); try{ localStorage.setItem('brick_speed',SPEED_MODE); }catch(e){} ov.querySelectorAll('.menu-grid .cell.sp').forEach(x=>x.classList.toggle('on',x===bt)); }; });
+  ov.querySelectorAll('.menu-grid .cell.sp').forEach(bt=>{ bt.onclick=()=>{ SPEED_MODE=bt.getAttribute('data-sp'); SPEED_PICKED=true; try{ localStorage.setItem('brick_speed',SPEED_MODE); }catch(e){} ov.querySelectorAll('.menu-grid .cell.sp').forEach(x=>x.classList.toggle('on',x===bt)); renderLobbyGrid(); }; });
   const rb=document.getElementById('retryBtn'); if(rb) rb.onclick=onRetry;
   const lb=document.getElementById('langBtn'); if(lb) lb.onclick=()=>{ setLang(LANG==='en'?'zh':'en'); };
+  if(kind==='menu') renderLobbyGrid();
 }
-function hideOverlay(){ ov.classList.add('hide'); const _hb=document.getElementById('btnLobby'); if(_hb)_hb.style.display=''; }
+function hideOverlay(){ ov.classList.add('hide'); }
 function onStart(){ if(G.mode==='menu'||G.mode==='gameover'||G.mode==='win'){ G.level=START_LEVEL; G.score=0; G.lives=MAXLIVES; buildLevel(G.level); }
   else if(G.mode==='levelclear'){ G.level++; buildLevel(G.level); }
   hideOverlay(); updateHud(); G.mode='ready'; if(AUTO) launch(); }
 function onRetry(){ G.lives=MAXLIVES; buildLevel(G.level); hideOverlay(); updateHud(); G.mode='ready'; if(AUTO) launch(); }
-function checkClear(){ if(G.mode==='play' && G.bricks.every(b=>!b.alive||b.type==='hard')){ SFX.clear(); G.flash=0.4;
+function checkClear(){ if(G.mode==='play' && G.bricks.every(b=>!b.alive||b.type==='hard')){ SFX.clear(); G.flash=0.4; try{ PROG.mark(SPEED_MODE,G.level); }catch(e){}
   if(G.level>=LEVELS.length-1){ G.mode='win'; showOverlay('win'); } else { G.mode='levelclear'; showOverlay('levelclear'); } } }
 const _lb=document.getElementById('btnLobby'); if(_lb) _lb.onclick=function(){ G.mode='menu'; showOverlay('menu'); };
-fit(); buildLevel(0); G.mode='menu'; updateHud(); applyLang(); showOverlay('menu'); if(AUTO||_lvlQ>=1){ onStart(); } requestAnimationFrame(loop);
+const _lb2=document.getElementById('btnLang2'); if(_lb2) _lb2.onclick=function(){ setLang(LANG==='en'?'zh':'en'); };
+fit(); buildLevel(0); G.mode='menu'; updateHud(); applyLang(); checkRotate(); showOverlay('menu'); if(AUTO||_lvlQ>=1){ onStart(); } requestAnimationFrame(loop);
 </script>
 </body>
 </html>
