@@ -149,6 +149,10 @@ const SFX={ paddle:()=>tone(300,180,0.06,'square',0.05), hit:()=>tone(520,520,0.
   brk:(r)=>tone(600+r*30,300,0.07,'square',0.05), explode:()=>{ noise(0.35,0.22,700); tone(160,60,0.3,'sawtooth',0.08); },
   power:()=>tone(500,900,0.14,'triangle',0.06), clear:()=>[0,0.09,0.18,0.28].forEach((t,i)=>setTimeout(()=>tone(520+i*160,0,0.18,'triangle',0.05),t*1000)),
   lose:()=>tone(300,80,0.4,'sawtooth',0.07) };
+/* 2026-10-10 John: iOS WKWebView 要使用者手勢才能啟動 AudioContext → 首次觸控/按鍵 resume */
+function unlockAudio(){ const a=actx(); if(a && a.state==='suspended'){ try{ a.resume(); }catch(e){} } }
+['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,unlockAudio,{passive:true}));
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) unlockAudio(); });
 
 const MAXLIVES=5; // 每局 5 命 (2026-10-08 John)
 const G={ mode:'menu', level:0, score:0, lives:MAXLIVES, stall:0, t:0,
