@@ -137,7 +137,7 @@ LEVELS=LEVELS.map(l=>({name:l[0], nameEn:l[0].replace('經典','Classic ').repla
 
 /* ---------- 音效 ---------- */
 let AC=null;
-function actx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=false; } } if(AC && AC.state==='suspended'){ try{ AC.resume(); }catch(e){} } return AC; }
+function actx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=false; } } if(AC && AC.state==='closed'){ AC=null; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=false; } } if(AC && AC.state!=='running'){ try{ AC.resume(); }catch(e){} } return AC; }
 function tone(f1,f2,dur,type,vol){ const a=actx(); if(!a)return; const o=a.createOscillator(),g=a.createGain(); o.type=type||'square';
   o.frequency.setValueAtTime(f1,a.currentTime); if(f2)o.frequency.exponentialRampToValueAtTime(Math.max(30,f2),a.currentTime+dur);
   g.gain.setValueAtTime(vol||0.05,a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+dur);
@@ -150,9 +150,10 @@ const SFX={ paddle:()=>tone(300,180,0.06,'square',0.05), hit:()=>tone(520,520,0.
   power:()=>tone(500,900,0.14,'triangle',0.06), clear:()=>[0,0.09,0.18,0.28].forEach((t,i)=>setTimeout(()=>tone(520+i*160,0,0.18,'triangle',0.05),t*1000)),
   lose:()=>tone(300,80,0.4,'sawtooth',0.07) };
 /* 2026-10-10 John: iOS WKWebView 要使用者手勢才能啟動 AudioContext → 首次觸控/按鍵 resume */
-function unlockAudio(){ const a=actx(); if(a && a.state==='suspended'){ try{ a.resume(); }catch(e){} } }
-['pointerdown','touchstart','keydown'].forEach(ev=>window.addEventListener(ev,unlockAudio,{passive:true}));
+function unlockAudio(){ const a=actx(); if(a && a.state!=='running'){ try{ a.resume(); }catch(e){} } }
+['pointerdown','touchstart','keydown','click'].forEach(ev=>window.addEventListener(ev,unlockAudio,{passive:true}));
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) unlockAudio(); });
+window.addEventListener('focus',unlockAudio); window.addEventListener('pageshow',unlockAudio);
 
 const MAXLIVES=5; // 每局 5 命 (2026-10-08 John)
 const G={ mode:'menu', level:0, score:0, lives:MAXLIVES, stall:0, t:0,
