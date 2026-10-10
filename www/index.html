@@ -66,7 +66,7 @@
 <div class="wrap">
   <canvas id="cv"></canvas>
   <div class="hud">
-    <div><span id="lblRound">回合</span> <b id="hLevel">1</b><br><span class="lv" id="hName">暖身</span></div>
+    <div><span id="lblRound">回合</span> <b id="hLevel">1</b></div>
     <div class="r"><span id="lblScore">得分</span> <b id="hScore">0</b><br><span id="hLives">♥♥♥</span></div>
   </div>
   <div class="overlay" id="ov"></div>
@@ -163,8 +163,8 @@ try{ const _s=localStorage.getItem('brick_speed'); if(_s==='slow'||_s==='advance
 const SPEED_BASE={normal:250, advanced:350, hell:500};
 /* i18n 中/英 (2026-10-08 John) */
 const I18N={
- zh:{title:'XOIO 打磚',round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}（${lvName(n-1)}）`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球',menuTip:'點速度 → 點格子直接從該關開始（實心＝已過關）'},
- en:{title:'Hell Bricks',round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n} (${lvName(n-1)})`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch',menuTip:'Pick a speed, then tap a round (solid = cleared)'}
+ zh:{title:'XOIO 打磚',round:'回合',score:'得分',start:'開始遊戲',normal:'普通',advanced:'進階',hell:'地獄',slow:'慢速',lobby:'退出',clear:n=>`回合 ${n} 過關`,next:'下一關 →',go:'GAME OVER',init:n=>`回合 ${n}`,fromhead:'從頭開始',fromlvl:n=>`從第 ${n} 關重來`,allclear:'全部過關! 🎉',done:n=>`共 ${n} 關`,again:'再玩一次',tip:'點畫面 / 空白鍵 發球',menuTip:'點速度 → 點格子直接從該關開始（實心＝已過關）'},
+ en:{title:'Hell Bricks',round:'ROUND',score:'SCORE',start:'START',normal:'NORMAL',advanced:'ADVANCED',hell:'HELL',slow:'SLOW',lobby:'EXIT',clear:n=>`ROUND ${n} CLEAR`,next:'NEXT →',go:'GAME OVER',init:n=>`ROUND ${n}`,fromhead:'FROM START',fromlvl:n=>`RETRY ROUND ${n}`,allclear:'ALL CLEAR! 🎉',done:n=>`${n} ROUNDS`,again:'PLAY AGAIN',tip:'Tap / Space to launch',menuTip:'Pick a speed, then tap a round (solid = cleared)'}
 };
 let LANG='zh'; try{ if(localStorage.getItem('brick_lang')==='en') LANG='en'; }catch(e){}
 function T(){ return I18N[LANG]; }
@@ -187,7 +187,7 @@ function buildLevel(i){
   G.paddle.h=Math.max(7,Math.round(bh*0.76)); G.paddle.y=H-Math.max(36,Math.round(H*0.0737)); G.paddle.x=W/2;
   const bw=(W-margin*2-gap*(cols0-1))/cols0;
   const cw=(bw-1*(SX-1))/SX, chh=(bh-1*(SY-1))/SY; // 子磚尺寸(格內 1px 縫)
-  G.geom={margin,top,gap,bw,bh,cols:cols0};
+  G.geom={margin,top,gap,bw,bh,cols:cols0,minBrick:Math.min(cw,chh)};
   G.bricks=[];
   rows0.forEach((row,r)=>{ for(let c=0;c<cols0;c++){
     const ch=row[c]; if(ch==='.') continue;
@@ -240,7 +240,7 @@ function update(dt){
   if(G.mode==='ready'){ G.balls.forEach(b=>{ b.x=G.paddle.x; b.y=G.paddle.y-b.r-8; }); }
   if(G.mode==='play'){
     for(const b of G.balls){
-      const sp=Math.hypot(b.vx,b.vy), steps=Math.max(1,Math.ceil(sp*dt/(b.r*0.8))); for(let s=0;s<steps;s++) moveBall(b,dt/steps); }
+      const sp=Math.hypot(b.vx,b.vy), _mb=(G.geom&&G.geom.minBrick)?G.geom.minBrick:6, steps=Math.min(64,Math.max(1,Math.ceil(sp*dt/Math.max(1.2,Math.min(b.r,_mb)*0.5)))); for(let s=0;s<steps;s++) moveBall(b,dt/steps); }
     for(const bl of G.bullets) bl.y+=bl.vy*dt;
     G.bullets=G.bullets.filter(bl=>{ if(bl.y<20)return false; for(const br of G.bricks){ if(!br.alive)continue;
       if(bl.x>br.x&&bl.x<br.x+br.w&&bl.y>br.y&&bl.y<br.y+br.h){ hitBrick(br,null); return false; } } return true; });
@@ -265,6 +265,11 @@ function antiFlat(b){ /* 夾住角度, 離水平至少約 14.5°, 防止平飛�
 function moveBall(b,dt){
   b.x+=b.vx*dt; b.y+=b.vy*dt;
   if(b.x-b.r<0){ b.x=b.r; b.vx=Math.abs(b.vx); } if(b.x+b.r>W){ b.x=W-b.r; b.vx=-Math.abs(b.vx); } if(b.y-b.r<0){ b.y=b.r; b.vy=Math.abs(b.vy); }
+  /* 2026-10-10 修卡死:球跑到磗場上方(頂牆與磗之間)且近乎垂直彈跳過久 → 打斜+往下,避免死循環 */
+  if(G.geom && b.y < G.geom.top - b.r){ const _s0=Math.hypot(b.vx,b.vy)||G.speed;
+    if(Math.abs(b.vx) < _s0*0.18){ b.topT=(b.topT||0)+dt; if(b.topT>1.4){ b.vx=(Math.random()<0.5?-1:1)*_s0*0.5; b.vy=Math.abs(b.vy)||_s0*0.5; b.topT=0; } }
+    else b.topT=0;
+  } else b.topT=0;
   antiFlat(b);
   const p=G.paddle;
   if(b.vy>0 && b.y+b.r>=p.y && b.y-b.r<=p.y+p.h && b.x>=p.x-p.w/2-b.r && b.x<=p.x+p.w/2+b.r){
