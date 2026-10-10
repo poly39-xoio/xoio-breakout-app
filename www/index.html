@@ -137,7 +137,7 @@ LEVELS=LEVELS.map(l=>({name:l[0], nameEn:l[0].replace('經典','Classic ').repla
 
 /* ---------- 音效 ---------- */
 let AC=null;
-function actx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=false; } } return AC; }
+function actx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=false; } } if(AC && AC.state==='suspended'){ try{ AC.resume(); }catch(e){} } return AC; }
 function tone(f1,f2,dur,type,vol){ const a=actx(); if(!a)return; const o=a.createOscillator(),g=a.createGain(); o.type=type||'square';
   o.frequency.setValueAtTime(f1,a.currentTime); if(f2)o.frequency.exponentialRampToValueAtTime(Math.max(30,f2),a.currentTime+dur);
   g.gain.setValueAtTime(vol||0.05,a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+dur);
