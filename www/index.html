@@ -336,7 +336,6 @@ let last=performance.now();
 function loop(t){ const dt=Math.min(0.033,(t-last)/1000); last=t; update(dt); checkClear(); draw(); requestAnimationFrame(loop); }
 function lvName(i){ const L=LEVELS[i]; return (LANG==='en'&&L&&L.nameEn)?L.nameEn:(L?L.name:''); }
 function updateHud(){ document.getElementById('hLevel').textContent=G.level+1;
-  document.getElementById('hName').textContent=lvName(G.level);
   document.getElementById('hScore').textContent=G.score;
   document.getElementById('hLives').textContent='♥'.repeat(Math.max(0,G.lives))+'♡'.repeat(Math.max(0,MAXLIVES-G.lives)); }
 /* 2026-10-09:過關記錄(4 種速度各自記錄,localStorage;實心＝已過關) */
