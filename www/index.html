@@ -292,7 +292,7 @@ function hitBrick(br,ball){ const bx=br.x+br.w/2, by=br.y+br.h/2;
   br.hp--; br.pop=1;
   if(br.hp>0){ burst(bx,by,'#cfe0ff',5); SFX.hit(); return; }
   br.alive=false; G.stall=0; G.combo++; G.comboT=1.5;
-  const gain=Math.round(br.pts*Math.min(6,1+Math.floor(G.combo/4))); G.score+=gain;
+  const gain=Math.round(br.pts*Math.min(6,1+Math.floor(G.combo/4))); G.score+=gain; updateHud(); // 2026-10-10 John: 分數即時更新(先前只掉命/開局才刷新)
   burst(bx,by,br.col,12); text(bx,by-6,'+'+gain,br.col);
   if(G.combo>=4) text(bx,by-24,'COMBO x'+G.combo,'#ffe45c');
   G.shake=Math.max(G.shake,5); SFX.brk(br.row);
